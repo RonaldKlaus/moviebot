@@ -54,7 +54,7 @@ function handleText(text) {
   } else {
     answer = ANSWERS[text]
     if (answer == undefined)
-      answer = "'" + text + "' habe ich leider nicht verstanden..."
+      answer = "Das habe ich leider nicht verstanden... Meintest du: Suche " + text + "?"
     sendTextMessage(sender, answer);
   }
 }
