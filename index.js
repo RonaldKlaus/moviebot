@@ -44,25 +44,9 @@ var token = "EAAZAw0OQTw80BAGKvPiaToib0stOKB1CuznVXLOw0gjRUQ2b7PD4DA23EWWZCuX8rZ
 
 // for message handling
 function sendTextMessage(senderId, text) {
-  console.log(text)
   messageData = { text: text }
 
-  // not working > WHY????
-  request({
-    url: 'https://graph.facebook.com/v2.6/me/messages',
-    qs: {access_token:token},
-    method: 'POST',
-    json: {
-      recipient: {id: senderId},
-      message: messageData,
-    }
-  }, function(error, response, body) {
-    if (error) {
-      console.log('Error sending message: ', error);
-    } else if (response.body.error) {
-      console.log('Error: ', response.body.error);
-    }
-  });
+  send(senderId, messageData)
 }
 
 function sendGenericMessage(sender) {
@@ -97,13 +81,17 @@ function sendGenericMessage(sender) {
       }
     }
   };
+  send(sender, messageData)
+}
+
+function send(senderId, message) {
   request({
     url: 'https://graph.facebook.com/v2.6/me/messages',
     qs: {access_token:token},
     method: 'POST',
     json: {
-      recipient: {id:sender},
-      message: messageData,
+      recipient: {id: senderId},
+      message: message,
     }
   }, function(error, response, body) {
     if (error) {
