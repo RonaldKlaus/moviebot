@@ -5,7 +5,7 @@ validationToken = 'psst_this_top_secret'
 app.set('port', (process.env.PORT || 5000));
 
 // athentication
-app.get('/webhook', function (req, res) {
+app.get('/webhook/', function (req, res) {
   if (req.query['hub.verify_token'] === validationToken) {
     res.send(req.query['hub.challenge']);
   }
