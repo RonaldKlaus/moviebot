@@ -13,7 +13,7 @@ app.get("/hello", function(request, response) {
   response.send("world");
 });
 
-// Authentication
+// Validation for the messenger app to use this webhook
 app.get('/webhook/', function (req, res) {
   if (req.query['hub.verify_token'] === 'psst_this_top_secret') {
     res.send(req.query['hub.challenge']);
@@ -30,7 +30,7 @@ app.post('/webhook', function (req, res) {
     sender = event.sender.id;
     if (event.message && event.message.text) {
       text = event.message.text;
-      console.log(sender, text)
+
       if (text == 'GENERIC')
         sendGenericMessage(sender)
       else
@@ -39,8 +39,6 @@ app.post('/webhook', function (req, res) {
   }
   res.sendStatus(200);
 });
-
-var token = "EAAZAw0OQTw80BAGKvPiaToib0stOKB1CuznVXLOw0gjRUQ2b7PD4DA23EWWZCuX8rZAOKps1cs2XQt4ZBWuoKNcIwLO35n7wVEbt2mrJKa0ZA7lSZCvn9bniqR7BGA6ut0rffTCZCwJ3sW4CeEmBYDZAmOuyWyr0Vlsqw1Gx4FmNygZDZD";
 
 // for message handling
 function sendTextMessage(senderId, text) {
@@ -83,6 +81,8 @@ function sendGenericMessage(sender) {
   };
   send(sender, messageData)
 }
+
+var token = "EAAZAw0OQTw80BAGKvPiaToib0stOKB1CuznVXLOw0gjRUQ2b7PD4DA23EWWZCuX8rZAOKps1cs2XQt4ZBWuoKNcIwLO35n7wVEbt2mrJKa0ZA7lSZCvn9bniqR7BGA6ut0rffTCZCwJ3sW4CeEmBYDZAmOuyWyr0Vlsqw1Gx4FmNygZDZD";
 
 function send(senderId, message) {
   request({
