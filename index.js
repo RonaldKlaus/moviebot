@@ -54,7 +54,7 @@ function handleText(text) {
   } else {
     answer = ANSWERS[text]
     if (answer == undefined)
-      answer = "'" + text + "' habe ich leider nicht verstanden..."
+      answer = "Das habe ich leider nicht verstanden... Meintest du: Suche " + text + "?"
     sendTextMessage(sender, answer);
   }
 }
@@ -66,27 +66,29 @@ function sendTextMessage(senderId, text) {
   sendMessage(senderId, messageData)
 }
 
-function sendGenericMessage(sender, item) {
-  console.log(item)
+function sendGenericMessage(sender, items) {
+
+  var elements = []
+
+  items.forEach( function(item, index) {
+    elements.push({
+      "title": item.title,
+      "subtitle": item.info,
+      "image_url": item.image,
+      "buttons": [{
+        "type": "web_url",
+        "url": item.url,
+        "title": "Link zum Treffer"
+      }]
+    })
+  })
+
   messageData = {
     "attachment": {
       "type": "template",
       "payload": {
         "template_type": "generic",
-        "elements": [{
-          "title": item.title,
-          "subtitle": item.info,
-          "image_url": item.image,
-          "buttons": [{
-            "type": "web_url",
-            "url": item.url,
-            "title": "Link zum Film"
-          }, {
-            "type": "postback",
-            "title": "Find ich nicht so dolle!",
-            "payload": "Du magst den nicht? Welchen Film magst du dann?",
-          }],
-        }]
+        "elements": elements
       }
     }
   };
@@ -115,10 +117,6 @@ function sendMessage(senderId, message) {
 
 /////////////// MOVIEPILOT ///////////////
 function fetch(query) {
-  // request.get("http://www.moviepilot.de/api/search?q=" + query + "&type=suggest&gamespilot=false", function(response) {
-  //   console.log(response)
-  // });
-  console.log("FETCH ", query)
   request({
     url: "http://www.moviepilot.de/api/search?q=" + query + "&type=suggest&gamespilot=false",
     method: 'GET'
@@ -134,9 +132,7 @@ function fetch(query) {
       sendTextMessage(sender, 'Leider habe ich heute kein Ergebnis für dich... *trauriges Wuff*');
     } else {
       sendTextMessage(sender, 'Das habe ich für dich gefunden! *aufgeregtes Wuff*');
-      body.forEach(function(item, index) {
-        sendGenericMessage(sender, item);
-      });
+      sendGenericMessage(sender, body);
     }
   });
 }
