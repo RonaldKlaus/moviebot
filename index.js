@@ -2,6 +2,9 @@ var express = require('express');
 var request = require('request'); // not in the example
 var app = express();
 
+// Wit.ai
+var wit = require('node-wit').Wit;
+
 // IMPORTANT!!! PARSE BODY INTO JSON
 var bodyParser = require('body-parser')
 // adding parser into express
@@ -28,23 +31,45 @@ app.post('/webhook', function (req, res) {
   for (i = 0; i < messaging_events.length; i++) {
     event = req.body.entry[0].messaging[i];
     sender = event.sender.id;
-    if (event.message && event.message.text) {
-      text = event.message.text;
+    // handle callback
+    console.log("Event:", event.type)
+    if (event.postback) {
+      text = JSON.stringify(event.postback);
+      handleText(sender, text, token);
+      continue;
+    }
 
-      if (text == 'GENERIC')
-        sendGenericMessage(sender)
-      else
-        sendTextMessage(sender, "ECHO: "+ text.substring(0, 200));
+    if (event.message && event.message.text) {
+      handleText(event.message.text)
     }
   }
   res.sendStatus(200);
 });
 
+
+function handleText(text) {
+  // Keyword to generate generic
+  if (text.toLowerCase() == 'matrix')
+    fetch(text);
+    return sendGenericMessage(sender);
+
+  answer = ANSWERS[text]
+  if (answer == undefined)
+    answer = "'" + text + "' habe ich leider nicht verstanden..."
+  sendTextMessage(sender, answer);
+}
+
 // for message handling
 function sendTextMessage(senderId, text) {
   messageData = { text: text }
 
-  send(senderId, messageData)
+  sendMessage(senderId, messageData)
+}
+
+function fetch(query) {
+  jQuery.get("http://www.moviepilot.de/api/search?q=" + query + "&type=suggest&gamespilot=false", function(response) {
+    console.log(response)
+  });
 }
 
 function sendGenericMessage(sender) {
@@ -54,37 +79,28 @@ function sendGenericMessage(sender) {
       "payload": {
         "template_type": "generic",
         "elements": [{
-          "title": "First card",
-          "subtitle": "Element #1 of an hscroll",
-          "image_url": "http://messengerdemo.parseapp.com/img/rift.png",
+          "title": "Matrix",
+          "subtitle": "Super Awesome Movie",
+          "image_url": "http://assets.cdn.moviepilot.de/files/c50861b75e2e12f24dd0f5a0320ddababe58413708040e128b0cd9966890/fill/168/240/NEU_-_Matrix.jpg",
           "buttons": [{
             "type": "web_url",
-            "url": "https://www.messenger.com/",
-            "title": "Web url"
+            "url": "http://www.moviepilot.de/movies/matrix",
+            "title": "Link zum Film"
           }, {
             "type": "postback",
-            "title": "Postback",
-            "payload": "Payload for first element in a generic bubble",
-          }],
-        },{
-          "title": "Second card",
-          "subtitle": "Element #2 of an hscroll",
-          "image_url": "http://messengerdemo.parseapp.com/img/gearvr.png",
-          "buttons": [{
-            "type": "postback",
-            "title": "Postback",
-            "payload": "Payload for second element in a generic bubble",
+            "title": "Find ich nicht so dolle!",
+            "payload": "Du magst den nicht? Welchen Film magst du dann?",
           }],
         }]
       }
     }
   };
-  send(sender, messageData)
+  sendMessage(sender, messageData)
 }
 
 var token = "EAAZAw0OQTw80BAGKvPiaToib0stOKB1CuznVXLOw0gjRUQ2b7PD4DA23EWWZCuX8rZAOKps1cs2XQt4ZBWuoKNcIwLO35n7wVEbt2mrJKa0ZA7lSZCvn9bniqR7BGA6ut0rffTCZCwJ3sW4CeEmBYDZAmOuyWyr0Vlsqw1Gx4FmNygZDZD";
 
-function send(senderId, message) {
+function sendMessage(senderId, message) {
   request({
     url: 'https://graph.facebook.com/v2.6/me/messages',
     qs: {access_token:token},
@@ -101,4 +117,11 @@ function send(senderId, message) {
     }
   });
 }
+
+ANSWERS = {
+  "Hallo": "Hallöchen :)",
+  "Wie geht es dir?": "Spitzenmäßig! Und dir?",
+  "Gut": "Toll! Ich mag Filme. Welcher ist dein Lieblingsfilm?"
+}
+
 
