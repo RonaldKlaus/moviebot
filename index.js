@@ -1,7 +1,7 @@
 var express = require('express');
 var app = express();
 
-// IMPORTANT!!!
+// IMPORTANT!!! PARSE BODY INTO JSON
 var bodyParser = require('body-parser')
 app.use(bodyParser.json());
 
@@ -20,6 +20,7 @@ app.get('/webhook/', function (req, res) {
 
 // recive messages and resent
 app.post('/webhook', function (req, res) {
+  // Here we expect json >> so we need a parser (see on top)
   messaging_events = req.body.entry[0].messaging;
   for (i = 0; i < messaging_events.length; i++) {
     event = req.body.entry[0].messaging[i];
@@ -32,6 +33,8 @@ app.post('/webhook', function (req, res) {
   }
   res.sendStatus(200);
 });
+
+var token = "EAAZAw0OQTw80BAGKvPiaToib0stOKB1CuznVXLOw0gjRUQ2b7PD4DA23EWWZCuX8rZAOKps1cs2XQt4ZBWuoKNcIwLO35n7wVEbt2mrJKa0ZA7lSZCvn9bniqR7BGA6ut0rffTCZCwJ3sW4CeEmBYDZAmOuyWyr0Vlsqw1Gx4FmNygZDZD";
 
 // for message handling
 function sendTextMessage(sender, text) {
